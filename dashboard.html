@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Central de Casos Criminais</title>
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <!-- vis.js for Network Graph -->
+    <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+    
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="dashboard.css">
+</head>
+<body>
+
+    <div class="dashboard-container">
+        <!-- Header -->
+        <header class="dashboard-header">
+            <div class="header-titles">
+                <h1>Central de Casos Criminais</h1>
+                <h2>Análise e Investigação</h2>
+            </div>
+            
+            <div class="header-actions">
+                <div class="officer-info">
+                    <div class="avatar">
+                        <i class="ph ph-user"></i>
+                    </div>
+                    <div>
+                        <span class="officer-name" id="display-name">Carregando...</span>
+                        <span class="badge">Matrícula: <span id="display-matricula">Carregando...</span></span>
+                    </div>
+                </div>
+                <button id="logout-btn" class="btn-secondary">
+                    <i class="ph ph-sign-out"></i>
+                    <span>Sair</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Controls (Tabs + Search/Add) -->
+        <div class="dashboard-controls">
+            <div class="tabs">
+                <button class="tab-btn active" data-target="tab-graph">
+                    <i class="ph ph-graph"></i> Visão em Grafo
+                </button>
+                <button class="tab-btn" data-target="tab-list">
+                    <i class="ph ph-list-dashes"></i> Lista de Casos
+                </button>
+            </div>
+            <div class="actions">
+                <div class="search-box">
+                    <i class="ph ph-magnifying-glass"></i>
+                    <input type="text" placeholder="Buscar casos, suspeitos...">
+                </div>
+                <button class="btn-primary">
+                    <i class="ph ph-plus"></i> Novo Caso
+                </button>
+            </div>
+        </div>
+
+        <main class="dashboard-main">
+            <!-- TAB: Visão em Grafo -->
+            <div id="tab-graph" class="tab-content active">
+                <div class="graph-layout">
+                    <div class="graph-container">
+                        <div id="network-graph"></div>
+                    </div>
+                    <div class="graph-sidebar">
+                        <div class="legend-card">
+                            <h3>Legenda</h3>
+                            <ul class="legend-list">
+                                <li><span class="legend-color color-case"></span> Casos (Laranja)</li>
+                                <li><span class="legend-color color-suspect"></span> Suspeitos (Azul)</li>
+                                <li><span class="legend-color color-location"></span> Locais (Verde)</li>
+                                <li><span class="legend-color color-vehicle"></span> Veículos (Roxo)</li>
+                                <li><span class="legend-color color-weapon"></span> Armas (Vermelho)</li>
+                            </ul>
+                        </div>
+                        <div class="stats-card">
+                            <h3>Estatísticas</h3>
+                            <div class="stat-item">
+                                <span class="stat-label">Total de Casos</span>
+                                <span class="stat-value">124</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Casos Ativos</span>
+                                <span class="stat-value">42</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Suspeitos Mapeados</span>
+                                <span class="stat-value">89</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Conexões</span>
+                                <span class="stat-value">312</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB: Lista de Casos -->
+            <div id="tab-list" class="tab-content">
+                <div class="case-list-grid">
+                    <!-- Card 1 -->
+                    <div class="case-card-detail">
+                        <div class="card-header">
+                            <span class="case-id">#2405</span>
+                            <span class="status-badge resolved">Resolvido</span>
+                        </div>
+                        <h3 class="case-title">Homicídio</h3>
+                        <div class="case-info">
+                            <div class="info-row"><i class="ph ph-warning-circle priority-high"></i> Prioridade: Alta</div>
+                            <div class="info-row"><i class="ph ph-calendar"></i> Data: 12/03/2026</div>
+                            <div class="info-row"><i class="ph ph-map-pin"></i> Local: Zona Norte</div>
+                            <div class="info-row"><i class="ph ph-user"></i> Oficial: Costa</div>
+                        </div>
+                    </div>
+                    <!-- Card 2 -->
+                    <div class="case-card-detail">
+                        <div class="card-header">
+                            <span class="case-id">#2410</span>
+                            <span class="status-badge investigation">Em investigação</span>
+                        </div>
+                        <h3 class="case-title">Roubo a Banco</h3>
+                        <div class="case-info">
+                            <div class="info-row"><i class="ph ph-warning-circle priority-critical"></i> Prioridade: Crítica</div>
+                            <div class="info-row"><i class="ph ph-calendar"></i> Data: 20/04/2026</div>
+                            <div class="info-row"><i class="ph ph-map-pin"></i> Local: Centro Financeiro</div>
+                            <div class="info-row"><i class="ph ph-user"></i> Oficial: Silva</div>
+                        </div>
+                    </div>
+                    <!-- Card 3 -->
+                    <div class="case-card-detail">
+                        <div class="card-header">
+                            <span class="case-id">#2415</span>
+                            <span class="status-badge investigation">Em investigação</span>
+                        </div>
+                        <h3 class="case-title">Tráfico de Drogas</h3>
+                        <div class="case-info">
+                            <div class="info-row"><i class="ph ph-warning-circle priority-medium"></i> Prioridade: Média</div>
+                            <div class="info-row"><i class="ph ph-calendar"></i> Data: 22/04/2026</div>
+                            <div class="info-row"><i class="ph ph-map-pin"></i> Local: Zona Sul</div>
+                            <div class="info-row"><i class="ph ph-user"></i> Oficial: Silva</div>
+                        </div>
+                    </div>
+                    <!-- Card 4 -->
+                    <div class="case-card-detail">
+                        <div class="card-header">
+                            <span class="case-id">#2420</span>
+                            <span class="status-badge new">Novo</span>
+                        </div>
+                        <h3 class="case-title">Sequestro</h3>
+                        <div class="case-info">
+                            <div class="info-row"><i class="ph ph-warning-circle priority-critical"></i> Prioridade: Crítica</div>
+                            <div class="info-row"><i class="ph ph-calendar"></i> Data: 25/04/2026</div>
+                            <div class="info-row"><i class="ph ph-map-pin"></i> Local: Desconhecido</div>
+                            <div class="info-row"><i class="ph ph-user"></i> Oficial: Costa</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="dashboard.js"></script>
+</body>
+</html>
