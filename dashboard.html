@@ -107,63 +107,20 @@
 
             <!-- TAB: Lista de Casos -->
             <div id="tab-list" class="tab-content">
-                <div class="case-list-grid">
-                    <!-- Card 1 -->
-                    <div class="case-card-detail">
-                        <div class="card-header">
-                            <span class="case-id">#2405</span>
-                            <span class="status-badge resolved">Resolvido</span>
-                        </div>
-                        <h3 class="case-title">Homicídio</h3>
-                        <div class="case-info">
-                            <div class="info-row"><i class="ph ph-warning-circle priority-high"></i> Prioridade: Alta</div>
-                            <div class="info-row"><i class="ph ph-calendar"></i> Data: 12/03/2026</div>
-                            <div class="info-row"><i class="ph ph-map-pin"></i> Local: Zona Norte</div>
-                            <div class="info-row"><i class="ph ph-user"></i> Oficial: Costa</div>
-                        </div>
-                    </div>
-                    <!-- Card 2 -->
-                    <div class="case-card-detail">
-                        <div class="card-header">
-                            <span class="case-id">#2410</span>
-                            <span class="status-badge investigation">Em investigação</span>
-                        </div>
-                        <h3 class="case-title">Roubo a Banco</h3>
-                        <div class="case-info">
-                            <div class="info-row"><i class="ph ph-warning-circle priority-critical"></i> Prioridade: Crítica</div>
-                            <div class="info-row"><i class="ph ph-calendar"></i> Data: 20/04/2026</div>
-                            <div class="info-row"><i class="ph ph-map-pin"></i> Local: Centro Financeiro</div>
-                            <div class="info-row"><i class="ph ph-user"></i> Oficial: Silva</div>
-                        </div>
-                    </div>
-                    <!-- Card 3 -->
-                    <div class="case-card-detail">
-                        <div class="card-header">
-                            <span class="case-id">#2415</span>
-                            <span class="status-badge investigation">Em investigação</span>
-                        </div>
-                        <h3 class="case-title">Tráfico de Drogas</h3>
-                        <div class="case-info">
-                            <div class="info-row"><i class="ph ph-warning-circle priority-medium"></i> Prioridade: Média</div>
-                            <div class="info-row"><i class="ph ph-calendar"></i> Data: 22/04/2026</div>
-                            <div class="info-row"><i class="ph ph-map-pin"></i> Local: Zona Sul</div>
-                            <div class="info-row"><i class="ph ph-user"></i> Oficial: Silva</div>
-                        </div>
-                    </div>
-                    <!-- Card 4 -->
-                    <div class="case-card-detail">
-                        <div class="card-header">
-                            <span class="case-id">#2420</span>
-                            <span class="status-badge new">Novo</span>
-                        </div>
-                        <h3 class="case-title">Sequestro</h3>
-                        <div class="case-info">
-                            <div class="info-row"><i class="ph ph-warning-circle priority-critical"></i> Prioridade: Crítica</div>
-                            <div class="info-row"><i class="ph ph-calendar"></i> Data: 25/04/2026</div>
-                            <div class="info-row"><i class="ph ph-map-pin"></i> Local: Desconhecido</div>
-                            <div class="info-row"><i class="ph ph-user"></i> Oficial: Costa</div>
-                        </div>
-                    </div>
+                <div class="table-responsive">
+                    <table class="case-table">
+                        <thead>
+                            <tr>
+                                <th>Boletim/ID</th>
+                                <th>Título do Caso</th>
+                                <th>Data</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="case-table-body">
+                            <!-- Populated via JS -->
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </main>
@@ -193,8 +150,8 @@
                 <!-- Passo 1: Local -->
                 <div id="step-1" class="wizard-step active">
                     <div class="form-group">
-                        <label for="local-id">ID do Local *</label>
-                        <input type="number" id="local-id" class="form-control" placeholder="ID (ex: 100)" required>
+                        <label for="local-id">ID do Local (Opcional)</label>
+                        <input type="number" id="local-id" class="form-control" placeholder="Automático se vazio">
                     </div>
                     <div class="form-group">
                         <label for="local-endereco">Endereço</label>
@@ -213,8 +170,8 @@
                 <!-- Passo 2: Crime -->
                 <div id="step-2" class="wizard-step" style="display: none;">
                     <div class="form-group">
-                        <label for="crime-id">ID do Crime (Nó) *</label>
-                        <input type="number" id="crime-id" class="form-control" placeholder="ID (ex: 101)" required>
+                        <label for="crime-id">ID do Crime (Nó - Opcional)</label>
+                        <input type="number" id="crime-id" class="form-control" placeholder="Automático se vazio">
                     </div>
                     <div class="form-group">
                         <label for="crime-data">Data</label>
@@ -237,8 +194,8 @@
                 <!-- Passo 3: Pessoa -->
                 <div id="step-3" class="wizard-step" style="display: none;">
                     <div class="form-group">
-                        <label for="pessoa-id">ID da Pessoa (Nó) *</label>
-                        <input type="number" id="pessoa-id" class="form-control" placeholder="ID (ex: 102)" required>
+                        <label for="pessoa-id">ID da Pessoa (Nó - Opcional)</label>
+                        <input type="number" id="pessoa-id" class="form-control" placeholder="Automático se vazio">
                     </div>
                     <div class="form-group">
                         <label for="pessoa-cpf">CPF</label>
@@ -265,6 +222,22 @@
                 <button id="btn-voltar" class="btn-secondary" style="display: none;">Voltar</button>
                 <button id="btn-proximo" class="btn-primary">Próximo</button>
                 <button id="btn-finalizar" class="btn-success" style="display: none;">Finalizar Registro</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Detalhes -->
+    <div id="detalhes-modal" class="modal-overlay">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h2>Especificações do Caso</h2>
+                <button id="close-detalhes" class="btn-close"><i class="ph ph-x"></i></button>
+            </div>
+            <div class="modal-body" id="detalhes-body">
+                <!-- Preenchido via JS -->
+            </div>
+            <div class="modal-footer">
+                <button id="btn-fechar-detalhes" class="btn-secondary">Fechar</button>
             </div>
         </div>
     </div>
