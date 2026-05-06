@@ -169,94 +169,102 @@
         </main>
     </div>
 
-    <!-- Modal de Cadastro -->
+    <!-- Modal de Cadastro Wizard -->
     <div id="cadastro-modal" class="modal-overlay">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>Novo Cadastro</h2>
+                <h2>Novo Registro de Cena de Crime</h2>
                 <button id="close-modal" class="btn-close"><i class="ph ph-x"></i></button>
             </div>
+            
+            <!-- Progress Bar -->
+            <div class="wizard-progress">
+                <div class="progress-track">
+                    <div class="progress-fill" id="progress-fill"></div>
+                </div>
+                <div class="progress-steps">
+                    <span class="step active" data-step="1">1. Local</span>
+                    <span class="step" data-step="2">2. Crime</span>
+                    <span class="step" data-step="3">3. Pessoa</span>
+                </div>
+            </div>
+
             <div class="modal-body">
-                <div class="form-group">
-                    <label for="tipo-cadastro">O que deseja cadastrar?</label>
-                    <select id="tipo-cadastro" class="form-control">
-                        <option value="crime">Crime</option>
-                        <option value="pessoa">Pessoa</option>
-                        <option value="local">Local</option>
-                    </select>
-                </div>
-
-                <!-- Campos Comuns -->
-                <div class="form-group">
-                    <label for="id-node">ID (Numérico)</label>
-                    <input type="number" id="id-node" class="form-control" placeholder="Deixe em branco para automático">
-                </div>
-
-                <!-- Campos de Local -->
-                <div id="form-local" class="form-section" style="display: none;">
+                <!-- Passo 1: Local -->
+                <div id="step-1" class="wizard-step active">
                     <div class="form-group">
-                        <label for="local-nome">Nome do Local</label>
-                        <input type="text" id="local-nome" class="form-control">
+                        <label for="local-id">ID do Local *</label>
+                        <input type="number" id="local-id" class="form-control" placeholder="ID (ex: 100)" required>
                     </div>
                     <div class="form-group">
                         <label for="local-endereco">Endereço</label>
-                        <input type="text" id="local-endereco" class="form-control">
+                        <input type="text" id="local-endereco" class="form-control" placeholder="Endereço">
                     </div>
                     <div class="form-group">
-                        <label for="local-tipo">Tipo de Local</label>
-                        <input type="text" id="local-tipo" class="form-control">
+                        <label for="local-nome">Nome *</label>
+                        <input type="text" id="local-nome" class="form-control" placeholder="Nome do Local (ex: Banco)" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="local-tipo">Tipo</label>
+                        <input type="text" id="local-tipo" class="form-control" placeholder="Comercial, Residencial...">
                     </div>
                 </div>
 
-                <!-- Campos de Crime -->
-                <div id="form-crime" class="form-section">
+                <!-- Passo 2: Crime -->
+                <div id="step-2" class="wizard-step" style="display: none;">
                     <div class="form-group">
-                        <label for="crime-titulo">Título</label>
-                        <input type="text" id="crime-titulo" class="form-control">
+                        <label for="crime-id">ID do Crime (Nó) *</label>
+                        <input type="number" id="crime-id" class="form-control" placeholder="ID (ex: 101)" required>
                     </div>
                     <div class="form-group">
                         <label for="crime-data">Data</label>
                         <input type="date" id="crime-data" class="form-control">
                     </div>
                     <div class="form-group">
-                        <label for="crime-id_crime">ID do Caso / Boletim</label>
-                        <input type="text" id="crime-id_crime" class="form-control">
+                        <label for="crime-id_crime">ID_Crime *</label>
+                        <input type="text" id="crime-id_crime" class="form-control" placeholder="Boletim/Número" required>
                     </div>
                     <div class="form-group">
-                        <label for="crime-tipo">Tipo de Crime</label>
-                        <input type="text" id="crime-tipo" class="form-control">
+                        <label for="crime-tipo">Tipo</label>
+                        <input type="text" id="crime-tipo" class="form-control" placeholder="Homicídio, Roubo...">
+                    </div>
+                    <div class="form-group">
+                        <label for="crime-titulo">Título *</label>
+                        <input type="text" id="crime-titulo" class="form-control" placeholder="Título do Caso" required>
                     </div>
                 </div>
 
-                <!-- Campos de Pessoa -->
-                <div id="form-pessoa" class="form-section" style="display: none;">
+                <!-- Passo 3: Pessoa -->
+                <div id="step-3" class="wizard-step" style="display: none;">
                     <div class="form-group">
-                        <label for="pessoa-nome">Nome</label>
-                        <input type="text" id="pessoa-nome" class="form-control">
+                        <label for="pessoa-id">ID da Pessoa (Nó) *</label>
+                        <input type="number" id="pessoa-id" class="form-control" placeholder="ID (ex: 102)" required>
                     </div>
                     <div class="form-group">
                         <label for="pessoa-cpf">CPF</label>
-                        <input type="text" id="pessoa-cpf" class="form-control">
+                        <input type="text" id="pessoa-cpf" class="form-control" placeholder="000.000.000-00">
                     </div>
                     <div class="form-group">
-                        <label for="pessoa-funcao">Função no Caso</label>
-                        <input type="text" id="pessoa-funcao" class="form-control">
+                        <label for="pessoa-funcao">Função</label>
+                        <input type="text" id="pessoa-funcao" class="form-control" placeholder="Suspeito, Testemunha...">
+                    </div>
+                    <div class="form-group">
+                        <label for="pessoa-nome">Nome *</label>
+                        <input type="text" id="pessoa-nome" class="form-control" placeholder="Nome Completo" required>
                     </div>
                     <div class="form-group">
                         <label for="pessoa-status">Status</label>
-                        <input type="text" id="pessoa-status" class="form-control">
+                        <input type="text" id="pessoa-status" class="form-control" placeholder="Foragido, Preso...">
                     </div>
                 </div>
-
-                <!-- Campo de Conexão -->
-                <div class="form-group">
-                    <label for="conexao-id">Conectar a qual ID? (Opcional)</label>
-                    <input type="number" id="conexao-id" class="form-control" placeholder="Ex: 1">
-                </div>
             </div>
-            <div class="modal-footer">
-                <button id="cancel-modal" class="btn-secondary">Cancelar</button>
-                <button id="save-modal" class="btn-primary">Salvar no Grafo</button>
+            
+            <div class="modal-footer wizard-footer">
+                <button id="btn-cancelar" class="btn-secondary">Cancelar</button>
+                <div class="spacer" style="flex-grow: 1;"></div>
+                <button id="btn-voltar" class="btn-secondary" style="display: none;">Voltar</button>
+                <button id="btn-proximo" class="btn-primary">Próximo</button>
+                <button id="btn-finalizar" class="btn-success" style="display: none;">Finalizar Registro</button>
             </div>
         </div>
     </div>

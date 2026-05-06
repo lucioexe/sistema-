@@ -172,101 +172,205 @@ document.addEventListener('DOMContentLoaded', () => {
         window.graphEdges = edges;
     }
 
-    // ---- 4. Modal de Cadastro ----
+    // ---- 4. Modal de Cadastro Wizard ----
     const btnNovoCaso = document.getElementById('btn-novo-caso');
     const modal = document.getElementById('cadastro-modal');
     const btnClose = document.getElementById('close-modal');
-    const btnCancel = document.getElementById('cancel-modal');
-    const btnSave = document.getElementById('save-modal');
-    const selectTipo = document.getElementById('tipo-cadastro');
+    const btnCancelar = document.getElementById('btn-cancelar');
+    
+    // Wizard buttons
+    const btnProximo = document.getElementById('btn-proximo');
+    const btnVoltar = document.getElementById('btn-voltar');
+    const btnFinalizar = document.getElementById('btn-finalizar');
+    
+    // Progress
+    const progressFill = document.getElementById('progress-fill');
+    const stepIndicators = document.querySelectorAll('.progress-steps .step');
+    
+    let currentStep = 1;
+    const totalSteps = 3;
 
     if (btnNovoCaso && modal) {
+        // Open Modal
         btnNovoCaso.addEventListener('click', () => {
             modal.classList.add('active');
+            goToStep(1);
         });
 
+        // Close Modal
         const closeModal = () => {
             modal.classList.remove('active');
+            // Reset form
+            document.querySelectorAll('.form-control').forEach(input => input.value = '');
         };
 
         btnClose.addEventListener('click', closeModal);
-        btnCancel.addEventListener('click', closeModal);
+        btnCancelar.addEventListener('click', closeModal);
 
-        selectTipo.addEventListener('change', (e) => {
-            document.getElementById('form-crime').style.display = 'none';
-            document.getElementById('form-pessoa').style.display = 'none';
-            document.getElementById('form-local').style.display = 'none';
+        // Validation logic
+        const validateStep = (step) => {
+            let isValid = true;
+            if (step === 1) {
+                if (!document.getElementById('local-id').value) isValid = false;
+                if (!document.getElementById('local-nome').value) isValid = false;
+            } else if (step === 2) {
+                if (!document.getElementById('crime-id').value) isValid = false;
+                if (!document.getElementById('crime-id_crime').value) isValid = false;
+                if (!document.getElementById('crime-titulo').value) isValid = false;
+            } else if (step === 3) {
+                if (!document.getElementById('pessoa-id').value) isValid = false;
+                if (!document.getElementById('pessoa-nome').value) isValid = false;
+            }
+            
+            if (!isValid) {
+                alert('Preencha os campos obrigatórios (*) para avançar.');
+            }
+            return isValid;
+        };
 
-            const tipo = e.target.value;
-            document.getElementById(`form-${tipo}`).style.display = 'flex';
+        // Navigate Steps
+        const goToStep = (step) => {
+            // Hide all steps
+            document.querySelectorAll('.wizard-step').forEach(el => el.style.display = 'none');
+            // Show current step
+            document.getElementById(`step-${step}`).style.display = 'block';
+            
+            if (btnVoltar) btnVoltar.style.display = step === 1 ? 'none' : 'block';
+            
+            if (step === totalSteps) {
+                btnProximo.style.display = 'none';
+                btnFinalizar.style.display = 'flex'; // It's a flex button
+            } else {
+                btnProximo.style.display = 'block';
+                btnFinalizar.style.display = 'none';
+            }
+            
+            // Update progress bar
+            progressFill.style.width = `${(step / totalSteps) * 100}%`;
+            
+            // Update indicators
+            stepIndicators.forEach((ind, index) => {
+                if (index < step) {
+                    ind.classList.add('active');
+                } else {
+                    ind.classList.remove('active');
+                }
+            });
+            
+            currentStep = step;
+        };
+
+        btnProximo.addEventListener('click', () => {
+            if (validateStep(currentStep)) {
+                goToStep(currentStep + 1);
+            }
         });
 
-        btnSave.addEventListener('click', () => {
+        if (btnVoltar) {
+            btnVoltar.addEventListener('click', () => {
+                if (currentStep > 1) {
+                    goToStep(currentStep - 1);
+                }
+            });
+        }
+
+        // Finalize and Add to Graph
+        btnFinalizar.addEventListener('click', () => {
+            if (!validateStep(3)) return;
+            
             if (!window.graphNodes || !window.graphEdges) {
                 alert('O grafo não está inicializado.');
                 return;
             }
 
-            const tipo = selectTipo.value;
-            let idInput = document.getElementById('id-node').value;
-            let id;
-            
-            if (!idInput) {
-                // Auto generate ID
-                const currentIds = window.graphNodes.getIds();
-                id = currentIds.length > 0 ? Math.max(...currentIds) + 1 : 1;
-            } else {
-                id = parseInt(idInput);
-            }
+            // Gather all data
+            const localData = {
+                id: parseInt(document.getElementById('local-id').value),
+                nome: document.getElementById('local-nome').value,
+                endereco: document.getElementById('local-endereco').value,
+                tipo: document.getElementById('local-tipo').value
+            };
 
-            let label = '';
-            let group = '';
+            const crimeData = {
+                id: parseInt(document.getElementById('crime-id').value),
+                id_crime: document.getElementById('crime-id_crime').value,
+                titulo: document.getElementById('crime-titulo').value,
+                data: document.getElementById('crime-data').value,
+                tipo: document.getElementById('crime-tipo').value
+            };
 
-            if (tipo === 'crime') {
-                const titulo = document.getElementById('crime-titulo').value || 'Sem título';
-                const idCrime = document.getElementById('crime-id_crime').value || id;
-                label = `Caso #${idCrime}\n${titulo}`;
-                group = 'case';
-            } else if (tipo === 'pessoa') {
-                const nome = document.getElementById('pessoa-nome').value || 'Desconhecido';
-                label = nome;
-                group = 'suspect';
-            } else if (tipo === 'local') {
-                const nome = document.getElementById('local-nome').value || 'Local Desconhecido';
-                const endereco = document.getElementById('local-endereco').value || '';
-                label = endereco ? `${nome}\n${endereco}` : nome;
-                group = 'location';
-            }
+            const pessoaData = {
+                id: parseInt(document.getElementById('pessoa-id').value),
+                nome: document.getElementById('pessoa-nome').value,
+                cpf: document.getElementById('pessoa-cpf').value,
+                funcao: document.getElementById('pessoa-funcao').value,
+                status: document.getElementById('pessoa-status').value
+            };
 
-            // Adiciona o nó no DataSet (o vis.js atualiza o grafo automaticamente)
+            // 1. Add to graph
             try {
-                window.graphNodes.add({ id: id, label: label, group: group });
+                // Add Local Node
+                window.graphNodes.add({
+                    id: localData.id,
+                    label: localData.endereco ? `${localData.nome}\n${localData.endereco}` : localData.nome,
+                    group: 'location'
+                });
+                
+                // Add Crime Node
+                window.graphNodes.add({
+                    id: crimeData.id,
+                    label: `Caso #${crimeData.id_crime}\n${crimeData.titulo}`,
+                    group: 'case'
+                });
+                
+                // Add Pessoa Node
+                window.graphNodes.add({
+                    id: pessoaData.id,
+                    label: pessoaData.nome,
+                    group: 'suspect'
+                });
+                
+                // Create Edges
+                // Pessoa -> envolvida em -> Crime
+                window.graphEdges.add({
+                    from: pessoaData.id,
+                    to: crimeData.id,
+                    label: pessoaData.funcao || 'Envolvido em'
+                });
+                
+                // Crime -> ocorreu em -> Local
+                window.graphEdges.add({
+                    from: crimeData.id,
+                    to: localData.id,
+                    label: 'Ocorreu em'
+                });
+
             } catch (err) {
-                alert('Erro ao adicionar nó. O ID pode já existir.');
+                alert('Erro ao adicionar nós. Verifique se os IDs já não existem no grafo.');
+                console.error(err);
                 return;
             }
 
-            const connectId = document.getElementById('conexao-id').value;
-            if (connectId) {
-                try {
-                    window.graphEdges.add({
-                        from: parseInt(connectId),
-                        to: id,
-                        label: 'Conexão'
-                    });
-                } catch (err) {
-                    console.error('Erro ao conectar', err);
-                }
-            }
+            // 2. Prepare JSON for backend (Django/Neo4j)
+            const payload = {
+                transactionType: 'CREATE_SCENE',
+                local: localData,
+                crime: crimeData,
+                pessoa: pessoaData
+            };
+            
+            console.log('Payload pronto para o Django/Neo4j:', JSON.stringify(payload, null, 2));
+            /* 
+            TODO: FUTURE BACKEND FETCH
+            fetch('YOUR_DJANGO_API_URL', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            }).then(response => response.json())
+              .then(data => console.log('Salvo no backend!', data));
+            */
 
             closeModal();
-            // Reset forms
-            document.querySelectorAll('.form-control').forEach(input => {
-                if(input.id !== 'tipo-cadastro') input.value = '';
-            });
-            // Reset select to default
-            selectTipo.value = 'crime';
-            selectTipo.dispatchEvent(new Event('change'));
         });
     }
 });
