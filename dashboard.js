@@ -166,5 +166,107 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         window.network = new vis.Network(container, data, options);
+        
+        // Expose datasets to be accessed by modal save function
+        window.graphNodes = nodes;
+        window.graphEdges = edges;
+    }
+
+    // ---- 4. Modal de Cadastro ----
+    const btnNovoCaso = document.getElementById('btn-novo-caso');
+    const modal = document.getElementById('cadastro-modal');
+    const btnClose = document.getElementById('close-modal');
+    const btnCancel = document.getElementById('cancel-modal');
+    const btnSave = document.getElementById('save-modal');
+    const selectTipo = document.getElementById('tipo-cadastro');
+
+    if (btnNovoCaso && modal) {
+        btnNovoCaso.addEventListener('click', () => {
+            modal.classList.add('active');
+        });
+
+        const closeModal = () => {
+            modal.classList.remove('active');
+        };
+
+        btnClose.addEventListener('click', closeModal);
+        btnCancel.addEventListener('click', closeModal);
+
+        selectTipo.addEventListener('change', (e) => {
+            document.getElementById('form-crime').style.display = 'none';
+            document.getElementById('form-pessoa').style.display = 'none';
+            document.getElementById('form-local').style.display = 'none';
+
+            const tipo = e.target.value;
+            document.getElementById(`form-${tipo}`).style.display = 'flex';
+        });
+
+        btnSave.addEventListener('click', () => {
+            if (!window.graphNodes || !window.graphEdges) {
+                alert('O grafo não está inicializado.');
+                return;
+            }
+
+            const tipo = selectTipo.value;
+            let idInput = document.getElementById('id-node').value;
+            let id;
+            
+            if (!idInput) {
+                // Auto generate ID
+                const currentIds = window.graphNodes.getIds();
+                id = currentIds.length > 0 ? Math.max(...currentIds) + 1 : 1;
+            } else {
+                id = parseInt(idInput);
+            }
+
+            let label = '';
+            let group = '';
+
+            if (tipo === 'crime') {
+                const titulo = document.getElementById('crime-titulo').value || 'Sem título';
+                const idCrime = document.getElementById('crime-id_crime').value || id;
+                label = `Caso #${idCrime}\n${titulo}`;
+                group = 'case';
+            } else if (tipo === 'pessoa') {
+                const nome = document.getElementById('pessoa-nome').value || 'Desconhecido';
+                label = nome;
+                group = 'suspect';
+            } else if (tipo === 'local') {
+                const nome = document.getElementById('local-nome').value || 'Local Desconhecido';
+                const endereco = document.getElementById('local-endereco').value || '';
+                label = endereco ? `${nome}\n${endereco}` : nome;
+                group = 'location';
+            }
+
+            // Adiciona o nó no DataSet (o vis.js atualiza o grafo automaticamente)
+            try {
+                window.graphNodes.add({ id: id, label: label, group: group });
+            } catch (err) {
+                alert('Erro ao adicionar nó. O ID pode já existir.');
+                return;
+            }
+
+            const connectId = document.getElementById('conexao-id').value;
+            if (connectId) {
+                try {
+                    window.graphEdges.add({
+                        from: parseInt(connectId),
+                        to: id,
+                        label: 'Conexão'
+                    });
+                } catch (err) {
+                    console.error('Erro ao conectar', err);
+                }
+            }
+
+            closeModal();
+            // Reset forms
+            document.querySelectorAll('.form-control').forEach(input => {
+                if(input.id !== 'tipo-cadastro') input.value = '';
+            });
+            // Reset select to default
+            selectTipo.value = 'crime';
+            selectTipo.dispatchEvent(new Event('change'));
+        });
     }
 });

@@ -58,7 +58,7 @@
                     <i class="ph ph-magnifying-glass"></i>
                     <input type="text" placeholder="Buscar casos, suspeitos...">
                 </div>
-                <button class="btn-primary">
+                <button id="btn-novo-caso" class="btn-primary">
                     <i class="ph ph-plus"></i> Novo Caso
                 </button>
             </div>
@@ -167,6 +167,98 @@
                 </div>
             </div>
         </main>
+    </div>
+
+    <!-- Modal de Cadastro -->
+    <div id="cadastro-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Novo Cadastro</h2>
+                <button id="close-modal" class="btn-close"><i class="ph ph-x"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="tipo-cadastro">O que deseja cadastrar?</label>
+                    <select id="tipo-cadastro" class="form-control">
+                        <option value="crime">Crime</option>
+                        <option value="pessoa">Pessoa</option>
+                        <option value="local">Local</option>
+                    </select>
+                </div>
+
+                <!-- Campos Comuns -->
+                <div class="form-group">
+                    <label for="id-node">ID (Numérico)</label>
+                    <input type="number" id="id-node" class="form-control" placeholder="Deixe em branco para automático">
+                </div>
+
+                <!-- Campos de Local -->
+                <div id="form-local" class="form-section" style="display: none;">
+                    <div class="form-group">
+                        <label for="local-nome">Nome do Local</label>
+                        <input type="text" id="local-nome" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="local-endereco">Endereço</label>
+                        <input type="text" id="local-endereco" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="local-tipo">Tipo de Local</label>
+                        <input type="text" id="local-tipo" class="form-control">
+                    </div>
+                </div>
+
+                <!-- Campos de Crime -->
+                <div id="form-crime" class="form-section">
+                    <div class="form-group">
+                        <label for="crime-titulo">Título</label>
+                        <input type="text" id="crime-titulo" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="crime-data">Data</label>
+                        <input type="date" id="crime-data" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="crime-id_crime">ID do Caso / Boletim</label>
+                        <input type="text" id="crime-id_crime" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="crime-tipo">Tipo de Crime</label>
+                        <input type="text" id="crime-tipo" class="form-control">
+                    </div>
+                </div>
+
+                <!-- Campos de Pessoa -->
+                <div id="form-pessoa" class="form-section" style="display: none;">
+                    <div class="form-group">
+                        <label for="pessoa-nome">Nome</label>
+                        <input type="text" id="pessoa-nome" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="pessoa-cpf">CPF</label>
+                        <input type="text" id="pessoa-cpf" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="pessoa-funcao">Função no Caso</label>
+                        <input type="text" id="pessoa-funcao" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="pessoa-status">Status</label>
+                        <input type="text" id="pessoa-status" class="form-control">
+                    </div>
+                </div>
+
+                <!-- Campo de Conexão -->
+                <div class="form-group">
+                    <label for="conexao-id">Conectar a qual ID? (Opcional)</label>
+                    <input type="number" id="conexao-id" class="form-control" placeholder="Ex: 1">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="cancel-modal" class="btn-secondary">Cancelar</button>
+                <button id="save-modal" class="btn-primary">Salvar no Grafo</button>
+            </div>
+        </div>
     </div>
 
     <script src="dashboard.js"></script>
