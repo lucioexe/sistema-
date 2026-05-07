@@ -73,10 +73,49 @@ const GraphEngine = (function() {
                 hover: true,
                 tooltipDelay: 200,
                 zoomView: true
+            },
+            manipulation: {
+                enabled: false, // Inicia desligado, será ativado pelo botão
+                addNode: false,
+                addEdge: function(data, callback) {
+                    if (data.from == data.to) {
+                        alert('Não é possível conectar um nó a ele mesmo.');
+                        callback(null);
+                    } else {
+                        const label = prompt('Digite o tipo de relação:');
+                        if (label) {
+                            data.label = label;
+                            callback(data); // Salva visualmente
+                            
+                            // Emite evento para persistência
+                            if (onManualEdgeAddedCallback) {
+                                onManualEdgeAddedCallback(data);
+                            }
+                        } else {
+                            callback(null);
+                        }
+                        
+                        // Desativa o modo após tentar (opcional, para forçar clique duplo)
+                        network.disableEditMode();
+                        // Reset button state if needed via UI logic
+                    }
+                }
             }
         };
 
         network = new vis.Network(container, data, options);
+    }
+
+    let onManualEdgeAddedCallback = null;
+
+    function onManualEdgeAdded(callback) {
+        onManualEdgeAddedCallback = callback;
+    }
+
+    function enableEdgeMode() {
+        if (network) {
+            network.addEdgeMode();
+        }
     }
 
     function renderGraphForCase(caso) {
@@ -108,7 +147,7 @@ const GraphEngine = (function() {
             }
         ]);
 
-        // Adicionar Arestas
+        // Adicionar Arestas da cena principal
         edgesDataset.add([
             {
                 from: pessoa.id,
@@ -122,6 +161,42 @@ const GraphEngine = (function() {
             }
         ]);
 
+        // Adicionar nós e arestas extras
+        if (caso.elementosExtras && caso.elementosExtras.length > 0) {
+            caso.elementosExtras.forEach(elemento => {
+                let nodeGroup = '';
+                let edgeLabel = '';
+
+                if (elemento.tipo === 'pessoa') {
+                    edgeLabel = elemento.extra || 'Envolvido em';
+                    nodeGroup = 'suspect';
+                } else if (elemento.tipo === 'local') {
+                    edgeLabel = elemento.extra || 'Relacionado a';
+                    nodeGroup = 'location';
+                } else if (elemento.tipo === 'veiculo') {
+                    edgeLabel = elemento.extra || 'Usado em';
+                    nodeGroup = 'vehicle';
+                }
+
+                nodesDataset.add({
+                    id: elemento.id,
+                    label: elemento.nome,
+                    group: nodeGroup
+                });
+
+                edgesDataset.add({
+                    from: elemento.tipo === 'pessoa' || elemento.tipo === 'veiculo' ? elemento.id : crime.id,
+                    to: elemento.tipo === 'pessoa' || elemento.tipo === 'veiculo' ? crime.id : elemento.id,
+                    label: edgeLabel
+                });
+            });
+        }
+
+        // Desenhar Conexões Manuais
+        if (caso.conexoesManuais && caso.conexoesManuais.length > 0) {
+            edgesDataset.add(caso.conexoesManuais);
+        }
+
         // Redesenhar e focar
         setTimeout(() => {
             network.redraw();
@@ -129,8 +204,27 @@ const GraphEngine = (function() {
         }, 100);
     }
 
+    function addExtraNode(nodeData, edgeData) {
+        if (!network) return;
+
+        nodesDataset.add(nodeData);
+        edgesDataset.add(edgeData);
+
+        // Focar no novo nó
+        network.focus(nodeData.id, {
+            scale: 1.2,
+            animation: {
+                duration: 1000,
+                easingFunction: 'easeInOutQuad'
+            }
+        });
+    }
+
     return {
         init,
-        renderGraphForCase
+        renderGraphForCase,
+        addExtraNode,
+        enableEdgeMode,
+        onManualEdgeAdded
     };
 })();

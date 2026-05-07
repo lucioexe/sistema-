@@ -7,7 +7,6 @@ const Wizard = (function() {
     const totalSteps = 3;
 
     function init() {
-        const btnNovoCaso = document.getElementById('btn-novo-caso');
         const modal = document.getElementById('cadastro-modal');
         const btnClose = document.getElementById('close-modal');
         const btnCancelar = document.getElementById('btn-cancelar');
@@ -16,13 +15,12 @@ const Wizard = (function() {
         const btnVoltar = document.getElementById('btn-voltar');
         const btnFinalizar = document.getElementById('btn-finalizar');
 
-        if (!btnNovoCaso || !modal) return;
+        if (!modal) return;
 
-        // Open Modal
-        btnNovoCaso.addEventListener('click', () => {
+        Wizard.open = () => {
             modal.classList.add('active');
             goToStep(1);
-        });
+        };
 
         // Close Modal
         const closeModal = () => {

@@ -54,7 +54,7 @@
                     <input type="text" placeholder="Buscar casos, suspeitos...">
                 </div>
                 <button id="btn-novo-caso" class="btn-primary">
-                    <i class="ph ph-plus"></i> Novo Caso
+                    <i class="ph ph-plus"></i> <span id="btn-novo-text">Novo Caso</span>
                 </button>
             </div>
         </div>
@@ -69,9 +69,12 @@
 
             <!-- VIEW: Grafo de Caso Específico -->
             <div id="view-graph" class="view-section">
-                <div style="margin-bottom: 16px;">
+                <div style="margin-bottom: 16px; display: flex; gap: 12px;">
                     <button id="btn-voltar-home" class="btn-secondary">
                         <i class="ph ph-arrow-left"></i> Voltar para Lista de Casos
+                    </button>
+                    <button id="btn-add-edge" class="btn-primary">
+                        <i class="ph ph-link"></i> Criar Nova Conexão
                     </button>
                 </div>
                 <div class="graph-layout">
@@ -211,9 +214,52 @@
         </div>
     </div>
 
+    <!-- Modal Único (Adicionar Elemento ao Grafo) -->
+    <div id="modal-add-elemento" class="modal-overlay">
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-header">
+                <h2>Adicionar Novo Elemento</h2>
+                <button id="close-add-elemento" class="btn-close"><i class="ph ph-x"></i></button>
+            </div>
+            
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="select-tipo-elemento">Tipo de Elemento</label>
+                    <select id="select-tipo-elemento" class="form-control">
+                        <option value="pessoa">Pessoa / Suspeito</option>
+                        <option value="local">Local</option>
+                        <option value="veiculo">Veículo</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="add-elemento-id">ID do Nó (Opcional)</label>
+                    <input type="number" id="add-elemento-id" class="form-control" placeholder="Automático se vazio">
+                </div>
+                
+                <div class="form-group">
+                    <label for="add-elemento-nome">Nome / Placa</label>
+                    <input type="text" id="add-elemento-nome" class="form-control" placeholder="Obrigatório">
+                </div>
+
+                <div class="form-group">
+                    <label for="add-elemento-extra">Detalhe Extra (Endereço, Função, etc.)</label>
+                    <input type="text" id="add-elemento-extra" class="form-control" placeholder="Opcional">
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button id="btn-cancelar-elemento" class="btn-secondary">Cancelar</button>
+                <div class="spacer" style="flex-grow: 1;"></div>
+                <button id="btn-salvar-elemento" class="btn-success">Adicionar Elemento</button>
+            </div>
+        </div>
+    </div>
+
     <script src="graphEngine.js"></script>
     <script src="caseManager.js"></script>
     <script src="wizard.js"></script>
+    <script src="elementModal.js"></script>
     <script src="dashboard.js"></script>
 </body>
 </html>
