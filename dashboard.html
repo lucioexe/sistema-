@@ -45,13 +45,8 @@
 
         <!-- Controls (Tabs + Search/Add) -->
         <div class="dashboard-controls">
-            <div class="tabs">
-                <button class="tab-btn active" data-target="tab-graph">
-                    <i class="ph ph-graph"></i> Visão em Grafo
-                </button>
-                <button class="tab-btn" data-target="tab-list">
-                    <i class="ph ph-list-dashes"></i> Lista de Casos
-                </button>
+            <div class="tabs" style="display: none;">
+                <!-- Abas removidas em favor da navegação Drill-Down -->
             </div>
             <div class="actions">
                 <div class="search-box">
@@ -65,15 +60,27 @@
         </div>
 
         <main class="dashboard-main">
-            <!-- TAB: Visão em Grafo -->
-            <div id="tab-graph" class="tab-content active">
+            <!-- VIEW: Grade de Casos (Home) -->
+            <div id="view-home" class="view-section active">
+                <div class="cases-grid" id="cases-grid-container">
+                    <!-- Populated via caseManager.js -->
+                </div>
+            </div>
+
+            <!-- VIEW: Grafo de Caso Específico -->
+            <div id="view-graph" class="view-section">
+                <div style="margin-bottom: 16px;">
+                    <button id="btn-voltar-home" class="btn-secondary">
+                        <i class="ph ph-arrow-left"></i> Voltar para Lista de Casos
+                    </button>
+                </div>
                 <div class="graph-layout">
                     <div class="graph-container">
                         <div id="network-graph"></div>
                     </div>
                     <div class="graph-sidebar">
                         <div class="legend-card">
-                            <h3>Legenda</h3>
+                            <h3>Legenda do Caso</h3>
                             <ul class="legend-list">
                                 <li><span class="legend-color color-case"></span> Casos (Laranja)</li>
                                 <li><span class="legend-color color-suspect"></span> Suspeitos (Azul)</li>
@@ -82,45 +89,7 @@
                                 <li><span class="legend-color color-weapon"></span> Armas (Vermelho)</li>
                             </ul>
                         </div>
-                        <div class="stats-card">
-                            <h3>Estatísticas</h3>
-                            <div class="stat-item">
-                                <span class="stat-label">Total de Casos</span>
-                                <span class="stat-value">0</span>
-                            </div>
-                            <div class="stat-item">
-                                <span class="stat-label">Casos Ativos</span>
-                                <span class="stat-value">0</span>
-                            </div>
-                            <div class="stat-item">
-                                <span class="stat-label">Suspeitos Mapeados</span>
-                                <span class="stat-value">0</span>
-                            </div>
-                            <div class="stat-item">
-                                <span class="stat-label">Conexões</span>
-                                <span class="stat-value">0</span>
-                            </div>
-                        </div>
                     </div>
-                </div>
-            </div>
-
-            <!-- TAB: Lista de Casos -->
-            <div id="tab-list" class="tab-content">
-                <div class="table-responsive">
-                    <table class="case-table">
-                        <thead>
-                            <tr>
-                                <th>Boletim/ID</th>
-                                <th>Título do Caso</th>
-                                <th>Data</th>
-                                <th>Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody id="case-table-body">
-                            <!-- Populated via JS -->
-                        </tbody>
-                    </table>
                 </div>
             </div>
         </main>
@@ -242,6 +211,9 @@
         </div>
     </div>
 
+    <script src="graphEngine.js"></script>
+    <script src="caseManager.js"></script>
+    <script src="wizard.js"></script>
     <script src="dashboard.js"></script>
 </body>
 </html>
