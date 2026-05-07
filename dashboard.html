@@ -236,6 +236,7 @@
                         <option value="pessoa">Pessoa / Suspeito</option>
                         <option value="local">Local</option>
                         <option value="veiculo">Veículo</option>
+                        <option value="arma">Arma</option>
                     </select>
                 </div>
                 
@@ -244,14 +245,8 @@
                     <input type="number" id="add-elemento-id" class="form-control" placeholder="Automático se vazio">
                 </div>
                 
-                <div class="form-group">
-                    <label for="add-elemento-nome">Nome / Placa</label>
-                    <input type="text" id="add-elemento-nome" class="form-control" placeholder="Obrigatório">
-                </div>
-
-                <div class="form-group">
-                    <label for="add-elemento-extra">Detalhe Extra (Endereço, Função, etc.)</label>
-                    <input type="text" id="add-elemento-extra" class="form-control" placeholder="Opcional">
+                <div id="dynamic-fields-container" style="display: flex; flex-direction: column; gap: 16px; margin-top: 16px;">
+                    <!-- Campos renderizados via JS -->
                 </div>
             </div>
 

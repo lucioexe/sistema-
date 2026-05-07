@@ -7,24 +7,30 @@ document.addEventListener('DOMContentLoaded', () => {
     const displayName = document.getElementById('display-name');
 
     const savedUserJson = localStorage.getItem('currentUser');
+    let user = null;
+    let storageKey = 'meusCasos'; // Fallback
     
     if (savedUserJson) {
-        const user = JSON.parse(savedUserJson);
+        user = JSON.parse(savedUserJson);
         if (displayMatricula) displayMatricula.textContent = user.matricula;
         if (displayName) displayName.textContent = user.nome;
+        storageKey = `${user.matricula}_meusCasos`;
     } else {
         window.location.href = 'index.html';
+        return; // Stop execution
     }
 
     if (logoutBtn) {
         logoutBtn.addEventListener('click', () => {
+            meusCasos = []; // Limpa memória
+            currentCaseIndex = null;
             localStorage.removeItem('currentUser');
             window.location.href = 'index.html';
         });
     }
 
     // ---- 2. Estado Global ----
-    let meusCasos = JSON.parse(localStorage.getItem('meusCasos')) || [];
+    let meusCasos = JSON.parse(localStorage.getItem(storageKey)) || [];
     let currentCaseIndex = null;
 
     // ---- 3. View Management (Drill-Down) ----
@@ -94,7 +100,7 @@ document.addEventListener('DOMContentLoaded', () => {
         Wizard.onSave((payload) => {
             payload.elementosExtras = []; // Initialize empty array for extra elements
             meusCasos.push(payload);
-            localStorage.setItem('meusCasos', JSON.stringify(meusCasos));
+            localStorage.setItem(storageKey, JSON.stringify(meusCasos));
             if (typeof CaseManager !== 'undefined') {
                 CaseManager.renderCards(meusCasos);
             }
@@ -111,7 +117,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const caso = meusCasos[currentCaseIndex];
                 if (!caso.elementosExtras) caso.elementosExtras = [];
                 caso.elementosExtras.push(elemento);
-                localStorage.setItem('meusCasos', JSON.stringify(meusCasos));
+                localStorage.setItem(storageKey, JSON.stringify(meusCasos));
 
                 // 2. Criar a Edge com o Crime
                 const crimeId = caso.crime.id;
@@ -119,14 +125,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 let nodeGroup = '';
 
                 if (elemento.tipo === 'pessoa') {
-                    edgeLabel = elemento.extra || 'Envolvido em';
+                    edgeLabel = 'Envolvido em';
                     nodeGroup = 'suspect';
                 } else if (elemento.tipo === 'local') {
-                    edgeLabel = elemento.extra || 'Relacionado a';
+                    edgeLabel = 'Relacionado a';
                     nodeGroup = 'location';
                 } else if (elemento.tipo === 'veiculo') {
-                    edgeLabel = elemento.extra || 'Usado em';
+                    edgeLabel = 'Usado em';
                     nodeGroup = 'vehicle';
+                } else if (elemento.tipo === 'arma') {
+                    edgeLabel = 'Usada em';
+                    nodeGroup = 'weapon';
                 }
 
                 const nodeData = {
@@ -136,8 +145,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 };
 
                 const edgeData = {
-                    from: elemento.tipo === 'pessoa' || elemento.tipo === 'veiculo' ? elemento.id : crimeId,
-                    to: elemento.tipo === 'pessoa' || elemento.tipo === 'veiculo' ? crimeId : elemento.id,
+                    from: elemento.tipo === 'pessoa' || elemento.tipo === 'veiculo' || elemento.tipo === 'arma' ? elemento.id : crimeId,
+                    to: elemento.tipo === 'pessoa' || elemento.tipo === 'veiculo' || elemento.tipo === 'arma' ? crimeId : elemento.id,
                     label: edgeLabel
                 };
 
@@ -166,7 +175,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     label: edgeData.label
                 });
                 
-                localStorage.setItem('meusCasos', JSON.stringify(meusCasos));
+                localStorage.setItem(storageKey, JSON.stringify(meusCasos));
             }
         });
 
@@ -196,31 +205,34 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Iniciar CaseManager
-    if (typeof CaseManager !== 'undefined') {
-        CaseManager.renderCards(meusCasos);
+  // Iniciar CaseManager
+if (typeof CaseManager !== 'undefined') {
+    CaseManager.renderCards(meusCasos);
+    
+    // Corrigido: Fechamento de chaves e parênteses organizados
+    CaseManager.onCaseClick((casoClicado) => {
+        // Encontrar o índice do caso clicado
+        const index = meusCasos.findIndex(c => c.crime.id === casoClicado.crime.id);
+        showGraphView(index);
         
-        CaseManager.onCaseClick((casoClicado) => {
-            // Find index of clicked case to set context
-            const index = meusCasos.findIndex(c => c.crime.id === casoClicado.crime.id);
-            showGraphView(index);
-            
-            if (typeof GraphEngine !== 'undefined') {
-                GraphEngine.renderGraphForCase(casoClicado);
-            }
-            if (typeof CaseManager.showInspector !== 'undefined') {
-                CaseManager.showInspector(null); // Reset inspector
-            }
-        });
+        if (typeof GraphEngine !== 'undefined') {
+            GraphEngine.renderGraphForCase(casoClicado);
+        }
+        
+        if (typeof CaseManager.showInspector !== 'undefined') {
+            CaseManager.showInspector(null); // Reset inspector
+        }
+    }); // <--- Aqui fechamos o onCaseClick corretamente
 
-        CaseManager.onDataUpdated(() => {
-            // Save updated case data to localStorage
-            localStorage.setItem('meusCasos', JSON.stringify(meusCasos));
-            
-            // Re-render graph to reflect label changes
-            if (currentCaseIndex !== null && typeof GraphEngine !== 'undefined') {
-                GraphEngine.renderGraphForCase(meusCasos[currentCaseIndex]);
-            }
-        });
-    }
-});
+    CaseManager.onDataUpdated(() => {
+        // Salvar dados atualizados usando a chave dinâmica (storageKey) que criamos
+        localStorage.setItem(storageKey, JSON.stringify(meusCasos));
+        
+        // Re-renderizar o grafo para refletir mudanças (ex: nome alterado)
+        if (currentCaseIndex !== null && typeof GraphEngine !== 'undefined') {
+            GraphEngine.renderGraphForCase(meusCasos[currentCaseIndex]);
+        }
+    });
+} // Fechamento do if (typeof CaseManager !== 'undefined')
+
+}); // Fechamento do document.addEventListener

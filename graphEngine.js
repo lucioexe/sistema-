@@ -182,14 +182,17 @@ const GraphEngine = (function() {
                 let edgeLabel = '';
 
                 if (elemento.tipo === 'pessoa') {
-                    edgeLabel = elemento.extra || 'Envolvido em';
+                    edgeLabel = 'Envolvido em';
                     nodeGroup = 'suspect';
                 } else if (elemento.tipo === 'local') {
-                    edgeLabel = elemento.extra || 'Relacionado a';
+                    edgeLabel = 'Relacionado a';
                     nodeGroup = 'location';
                 } else if (elemento.tipo === 'veiculo') {
-                    edgeLabel = elemento.extra || 'Usado em';
+                    edgeLabel = 'Usado em';
                     nodeGroup = 'vehicle';
+                } else if (elemento.tipo === 'arma') {
+                    edgeLabel = 'Usada em';
+                    nodeGroup = 'weapon';
                 }
 
                 nodesDataset.add({
@@ -199,8 +202,8 @@ const GraphEngine = (function() {
                 });
 
                 edgesDataset.add({
-                    from: elemento.tipo === 'pessoa' || elemento.tipo === 'veiculo' ? elemento.id : crime.id,
-                    to: elemento.tipo === 'pessoa' || elemento.tipo === 'veiculo' ? crime.id : elemento.id,
+                    from: elemento.tipo === 'pessoa' || elemento.tipo === 'veiculo' || elemento.tipo === 'arma' ? elemento.id : crime.id,
+                    to: elemento.tipo === 'pessoa' || elemento.tipo === 'veiculo' || elemento.tipo === 'arma' ? crime.id : elemento.id,
                     label: edgeLabel
                 });
             });
