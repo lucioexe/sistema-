@@ -104,9 +104,23 @@ const GraphEngine = (function() {
         };
 
         network = new vis.Network(container, data, options);
+
+        // Click Event listener
+        network.on('click', function(params) {
+            if (params.nodes.length > 0) {
+                if (onNodeClickCallback) onNodeClickCallback(params.nodes[0]);
+            } else {
+                if (onNodeClickCallback) onNodeClickCallback(null);
+            }
+        });
     }
 
     let onManualEdgeAddedCallback = null;
+    let onNodeClickCallback = null;
+
+    function onNodeClick(callback) {
+        onNodeClickCallback = callback;
+    }
 
     function onManualEdgeAdded(callback) {
         onManualEdgeAddedCallback = callback;
@@ -225,6 +239,7 @@ const GraphEngine = (function() {
         renderGraphForCase,
         addExtraNode,
         enableEdgeMode,
-        onManualEdgeAdded
+        onManualEdgeAdded,
+        onNodeClick
     };
 })();

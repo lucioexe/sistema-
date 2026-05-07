@@ -169,6 +169,31 @@ document.addEventListener('DOMContentLoaded', () => {
                 localStorage.setItem('meusCasos', JSON.stringify(meusCasos));
             }
         });
+
+        GraphEngine.onNodeClick((nodeId) => {
+            if (currentCaseIndex === null || typeof CaseManager === 'undefined' || !CaseManager.showInspector) return;
+
+            const caso = meusCasos[currentCaseIndex];
+
+            if (!nodeId) {
+                CaseManager.showInspector(null);
+                return;
+            }
+
+            let foundData = null;
+
+            if (caso.local && caso.local.id === nodeId) {
+                foundData = caso.local;
+            } else if (caso.crime && caso.crime.id === nodeId) {
+                foundData = caso.crime;
+            } else if (caso.pessoa && caso.pessoa.id === nodeId) {
+                foundData = caso.pessoa;
+            } else if (caso.elementosExtras) {
+                foundData = caso.elementosExtras.find(el => el.id === nodeId);
+            }
+
+            CaseManager.showInspector(foundData);
+        });
     }
 
     // Iniciar CaseManager
@@ -182,6 +207,19 @@ document.addEventListener('DOMContentLoaded', () => {
             
             if (typeof GraphEngine !== 'undefined') {
                 GraphEngine.renderGraphForCase(casoClicado);
+            }
+            if (typeof CaseManager.showInspector !== 'undefined') {
+                CaseManager.showInspector(null); // Reset inspector
+            }
+        });
+
+        CaseManager.onDataUpdated(() => {
+            // Save updated case data to localStorage
+            localStorage.setItem('meusCasos', JSON.stringify(meusCasos));
+            
+            // Re-render graph to reflect label changes
+            if (currentCaseIndex !== null && typeof GraphEngine !== 'undefined') {
+                GraphEngine.renderGraphForCase(meusCasos[currentCaseIndex]);
             }
         });
     }

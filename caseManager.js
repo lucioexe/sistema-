@@ -51,8 +51,86 @@ const CaseManager = (function() {
         onCaseClickCallback = callback;
     }
 
+    let onDataUpdatedCallback = null;
+
+    function onDataUpdated(callback) {
+        onDataUpdatedCallback = callback;
+    }
+
+    function showInspector(elementData) {
+        const inspectorContent = document.getElementById('inspector-content');
+        if (!inspectorContent) return;
+
+        if (!elementData) {
+            inspectorContent.innerHTML = '<p style="color: var(--text-muted); text-align: center; padding: 16px 0;">Selecione um elemento no grafo para ver e editar seus detalhes.</p>';
+            return;
+        }
+
+        let html = '';
+        
+        Object.keys(elementData).forEach(key => {
+            if (key === 'id') return; // Do not allow editing ID directly here to prevent breaking references
+
+            const value = elementData[key] || '';
+            
+            html += `
+                <div class="inspector-item">
+                    <span class="inspector-label">${key}</span>
+                    <div class="inspector-value-container" id="container-${key}">
+                        <span class="inspector-value" id="val-${key}">${value}</span>
+                        <button class="btn-edit" data-key="${key}" title="Editar"><i class="ph ph-pencil"></i></button>
+                    </div>
+                </div>
+            `;
+        });
+
+        inspectorContent.innerHTML = html;
+
+        // Add event listeners for edit buttons
+        const editButtons = inspectorContent.querySelectorAll('.btn-edit');
+        editButtons.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const key = btn.getAttribute('data-key');
+                const container = document.getElementById(`container-${key}`);
+                const currentValue = elementData[key] || '';
+                
+                // Switch to edit mode
+                container.innerHTML = `
+                    <input type="text" class="edit-input" id="input-${key}" value="${currentValue}">
+                    <button class="btn-save" data-key="${key}" title="Salvar"><i class="ph ph-check"></i></button>
+                `;
+                
+                const inputElement = document.getElementById(`input-${key}`);
+                inputElement.focus();
+                
+                const saveBtn = container.querySelector('.btn-save');
+                
+                const saveAction = () => {
+                    const newValue = inputElement.value;
+                    elementData[key] = newValue; // Update reference directly
+                    
+                    if (onDataUpdatedCallback) {
+                        onDataUpdatedCallback(); // Notify coordinator
+                    }
+                    
+                    // Re-render inspector to go back to read-only mode
+                    showInspector(elementData);
+                };
+                
+                saveBtn.addEventListener('click', saveAction);
+                inputElement.addEventListener('keypress', (event) => {
+                    if (event.key === 'Enter') {
+                        saveAction();
+                    }
+                });
+            });
+        });
+    }
+
     return {
         renderCards,
-        onCaseClick
+        onCaseClick,
+        showInspector,
+        onDataUpdated
     };
 })();

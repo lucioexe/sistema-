@@ -668,3 +668,78 @@ body {
 .btn-success:hover {
     background-color: #059669;
 }
+
+/* Inspector Styles */
+.inspector-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.inspector-item:last-child {
+    border-bottom: none;
+}
+
+.inspector-label {
+    color: var(--text-muted);
+    font-size: 13px;
+    font-weight: 500;
+    flex-shrink: 0;
+    width: 30%;
+    text-transform: capitalize;
+}
+
+.inspector-value-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 70%;
+    justify-content: flex-end;
+}
+
+.inspector-value {
+    color: var(--text-main);
+    font-size: 14px;
+    text-align: right;
+    word-break: break-word;
+}
+
+.edit-input {
+    width: 100%;
+    background-color: rgba(0, 0, 0, 0.2);
+    border: 1px solid var(--primary);
+    color: var(--text-main);
+    border-radius: var(--radius-sm);
+    padding: 6px 8px;
+    font-size: 14px;
+    outline: none;
+    font-family: inherit;
+}
+
+.btn-edit, .btn-save {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 4px;
+    border-radius: var(--radius-sm);
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-edit:hover {
+    color: var(--primary);
+    background-color: rgba(59, 130, 246, 0.1);
+}
+
+.btn-save {
+    color: var(--success);
+}
+
+.btn-save:hover {
+    background-color: rgba(16, 185, 129, 0.1);
+}
