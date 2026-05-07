@@ -55,37 +55,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const container = document.getElementById('network-graph');
     if (container && typeof vis !== 'undefined') {
         
-        let initialNodes = [
-            { id: 1, label: 'Caso #2405\nHomicídio', group: 'case' },
-            { id: 2, label: 'Caso #2410\nRoubo', group: 'case' },
-            { id: 10, label: 'Caso #2415\nTráfico', group: 'case' },
-            { id: 3, label: 'João Silva', group: 'suspect' },
-            { id: 4, label: 'Marcos Costa', group: 'suspect' },
-            { id: 5, label: 'Ana Souza', group: 'suspect' },
-            { id: 11, label: 'Carlos Lima', group: 'suspect' },
-            { id: 6, label: 'Galpão\nZona Norte', group: 'location' },
-            { id: 7, label: 'Centro\nFinanceiro', group: 'location' },
-            { id: 12, label: 'Zona Sul', group: 'location' },
-            { id: 8, label: 'Carro Preto\nABC-1234', group: 'vehicle' },
-            { id: 13, label: 'Moto Branca\nXYZ-9876', group: 'vehicle' },
-            { id: 9, label: 'Pistola 9mm', group: 'weapon' }
-        ];
+        let initialNodes = [];
 
-        let initialEdges = [
-            { from: 1, to: 3, label: 'Suspeito Principal' },
-            { from: 1, to: 6, label: 'Local do Crime' },
-            { from: 1, to: 9, label: 'Arma Usada' },
-            { from: 2, to: 4, label: 'Suspeito' },
-            { from: 2, to: 5, label: 'Cúmplice' },
-            { from: 2, to: 7, label: 'Local do Crime' },
-            { from: 2, to: 8, label: 'Veículo de Fuga' },
-            { from: 10, to: 11, label: 'Líder' },
-            { from: 10, to: 5, label: 'Distribuidora' },
-            { from: 10, to: 12, label: 'Base de Operação' },
-            { from: 10, to: 13, label: 'Transporte' },
-            { from: 3, to: 5, label: 'Associados', dashes: true },
-            { from: 3, to: 11, label: 'Parentesco', dashes: true }
-        ];
+        let initialEdges = [];
 
         const savedNodes = localStorage.getItem('graphNodes');
         const savedEdges = localStorage.getItem('graphEdges');
@@ -380,22 +352,17 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!tbody) return;
         tbody.innerHTML = '';
         
-        // Se estiver vazio, mostrar os casos padrão
+        // Se estiver vazio, mostrar estado inicial (Empty State)
         if (meusCasos.length === 0) {
             tbody.innerHTML = `
                 <tr>
-                    <td>#2405</td>
-                    <td>Homicídio</td>
-                    <td>12/03/2026</td>
-                    <td><button class="btn-primary btn-small">Ver Detalhes</button></td>
-                </tr>
-                <tr>
-                    <td>#2410</td>
-                    <td>Roubo a Banco</td>
-                    <td>20/04/2026</td>
-                    <td><button class="btn-primary btn-small">Ver Detalhes</button></td>
+                    <td colspan="4" style="text-align: center; color: var(--text-muted); padding: 40px 20px;">
+                        <i class="ph ph-folder-open" style="font-size: 32px; margin-bottom: 12px; display: block; opacity: 0.5;"></i>
+                        Nenhum caso registrado até o momento.<br>Clique em "Novo Caso" para começar sua investigação.
+                    </td>
                 </tr>
             `;
+            return;
         }
 
         meusCasos.forEach((caso, index) => {
