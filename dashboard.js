@@ -42,6 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnNovoCaso = document.getElementById('btn-novo-caso');
     const btnNovoText = document.getElementById('btn-novo-text');
     const btnAddEdge = document.getElementById('btn-add-edge');
+    const searchInput = document.getElementById('search-input');
 
     function showHomeView() {
         currentCaseIndex = null;
@@ -93,7 +94,22 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // ---- 4. Inicialização dos Módulos ----
+    // ---- 4. Busca em Tempo Real ----
+    if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase();
+            const filtered = meusCasos.filter(caso => {
+                return caso.crime.titulo.toLowerCase().includes(term) || 
+                       caso.pessoa.nome.toLowerCase().includes(term) ||
+                       caso.crime.id_crime.toLowerCase().includes(term);
+            });
+            if (typeof CaseManager !== 'undefined') {
+                CaseManager.renderCards(filtered);
+            }
+        });
+    }
+
+    // ---- 5. Inicialização dos Módulos ----
     
     // Iniciar Wizard
     if (typeof Wizard !== 'undefined') {
@@ -106,6 +122,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (typeof CaseManager !== 'undefined') {
                 CaseManager.renderCards(meusCasos);
             }
+            UI.showNotification('Caso registrado com sucesso!', 'success');
         });
     }
 
@@ -156,6 +173,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (typeof GraphEngine !== 'undefined') {
                     GraphEngine.addExtraNode(nodeData, edgeData);
                 }
+                
+                UI.showNotification('Elemento adicionado ao grafo!', 'success');
             }
         });
     }
@@ -169,8 +188,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 const caso = meusCasos[currentCaseIndex];
                 if (!caso.conexoesManuais) caso.conexoesManuais = [];
                 
-                // Limpar ids gerados internamente pelo vis.js se preferir, ou manter para consistência visual
-                // Push a new object matching Vis.js edge structure
                 caso.conexoesManuais.push({
                     from: edgeData.from,
                     to: edgeData.to,
@@ -178,6 +195,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
                 
                 localStorage.setItem(storageKey, JSON.stringify(meusCasos));
+                UI.showNotification('Conexão salva!', 'success');
             }
         });
 
@@ -205,15 +223,81 @@ document.addEventListener('DOMContentLoaded', () => {
 
             CaseManager.showInspector(foundData);
         });
+
+        // Coordenadas do Grafo
+        GraphEngine.onNodePositionChanged((nodeId, x, y) => {
+            if (currentCaseIndex !== null) {
+                const caso = meusCasos[currentCaseIndex];
+                
+                // Encontrar o elemento correspondente e atualizar x, y
+                if (caso.local.id === nodeId) {
+                    caso.local.x = x; caso.local.y = y;
+                } else if (caso.crime.id === nodeId) {
+                    caso.crime.x = x; caso.crime.y = y;
+                } else if (caso.pessoa.id === nodeId) {
+                    caso.pessoa.x = x; caso.pessoa.y = y;
+                } else if (caso.elementosExtras) {
+                    const extra = caso.elementosExtras.find(el => el.id === nodeId);
+                    if (extra) {
+                        extra.x = x; extra.y = y;
+                    }
+                }
+                
+                localStorage.setItem(storageKey, JSON.stringify(meusCasos));
+            }
+        });
+
+        // Remoção de Vínculos (Edges)
+        GraphEngine.onEdgeClick(async (edgeData) => {
+            if (currentCaseIndex === null || !edgeData) return;
+
+            const caso = meusCasos[currentCaseIndex];
+            
+            const confirmed = await CustomDialogs.confirm(
+                'Deseja remover este vínculo entre os elementos?',
+                'Remover Vínculo'
+            );
+
+            if (confirmed) {
+                // 1. Se for uma conexão manual, remover do array conexoesManuais
+                if (caso.conexoesManuais) {
+                    const originalLength = caso.conexoesManuais.length;
+                    caso.conexoesManuais = caso.conexoesManuais.filter(e => 
+                        !(e.from === edgeData.from && e.to === edgeData.to)
+                    );
+                    
+                    // Se removeu algo do conexoesManuais, já podemos salvar e retornar
+                    if (caso.conexoesManuais.length !== originalLength) {
+                        localStorage.setItem(storageKey, JSON.stringify(meusCasos));
+                        GraphEngine.renderGraphForCase(caso);
+                        UI.showNotification('Vínculo manual removido!', 'success');
+                        return;
+                    }
+                }
+
+                // 2. Se for uma conexão padrão ou extra, adicionar ao conexoesOcultas
+                if (!caso.conexoesOcultas) caso.conexoesOcultas = [];
+                caso.conexoesOcultas.push({ from: edgeData.from, to: edgeData.to });
+                
+                localStorage.setItem(storageKey, JSON.stringify(meusCasos));
+                GraphEngine.renderGraphForCase(caso);
+                UI.showNotification('Vínculo removido!', 'success');
+
+                // 3. Limpar inspetor
+                if (typeof CaseManager !== 'undefined' && CaseManager.showInspector) {
+                    CaseManager.showInspector(null);
+                }
+            }
+        });
     }
+
+
 
   // Iniciar CaseManager
 if (typeof CaseManager !== 'undefined') {
     CaseManager.renderCards(meusCasos);
     
-    // Corrigido: Fechamento de chaves e parênteses organizados
     CaseManager.onCaseClick((casoClicado) => {
-        // Encontrar o índice do caso clicado
         const index = meusCasos.findIndex(c => c.crime.id === casoClicado.crime.id);
         showGraphView(index);
         
@@ -222,19 +306,61 @@ if (typeof CaseManager !== 'undefined') {
         }
         
         if (typeof CaseManager.showInspector !== 'undefined') {
-            CaseManager.showInspector(null); // Reset inspector
+            CaseManager.showInspector(null);
         }
-    }); // <--- Aqui fechamos o onCaseClick corretamente
+    });
+
+    CaseManager.onDeleteCase(async (casoToDelete) => {
+        const confirmed = await CustomDialogs.confirm(
+            `Tem certeza que deseja excluir o caso "${casoToDelete.crime.titulo}"?`,
+            'Excluir Caso'
+        );
+        if (confirmed) {
+            meusCasos = meusCasos.filter(c => c.crime.id !== casoToDelete.crime.id);
+            localStorage.setItem(storageKey, JSON.stringify(meusCasos));
+            CaseManager.renderCards(meusCasos);
+            UI.showNotification('Caso removido!', 'success');
+        }
+    });
+
+    CaseManager.onRemoveElement((nodeId) => {
+        // Nota: O onRemoveElement no CaseManager ainda usa confirm nativo no evento interno.
+        // Vou precisar atualizar o caseManager.js também.
+        // Mas aqui no dashboard lidamos com a remoção após o callback ser disparado.
+        
+        if (currentCaseIndex !== null) {
+            const caso = meusCasos[currentCaseIndex];
+            
+            // 1. Remover dos elementos extras se estiver lá
+            if (caso.elementosExtras) {
+                caso.elementosExtras = caso.elementosExtras.filter(el => el.id !== nodeId);
+            }
+            
+            // 2. Remover conexões manuais que envolvam este nó
+            if (caso.conexoesManuais) {
+                caso.conexoesManuais = caso.conexoesManuais.filter(edge => edge.from !== nodeId && edge.to !== nodeId);
+            }
+
+            // 3. Remover do Grafo Visual
+            if (typeof GraphEngine !== 'undefined') {
+                GraphEngine.removeNode(nodeId);
+            }
+
+            localStorage.setItem(storageKey, JSON.stringify(meusCasos));
+            UI.showNotification('Elemento removido!', 'success');
+        }
+    });
+
+    // ... (onEdgeClick logic below)
+
 
     CaseManager.onDataUpdated(() => {
-        // Salvar dados atualizados usando a chave dinâmica (storageKey) que criamos
         localStorage.setItem(storageKey, JSON.stringify(meusCasos));
-        
-        // Re-renderizar o grafo para refletir mudanças (ex: nome alterado)
         if (currentCaseIndex !== null && typeof GraphEngine !== 'undefined') {
             GraphEngine.renderGraphForCase(meusCasos[currentCaseIndex]);
         }
+        UI.showNotification('Dados atualizados!', 'success');
     });
-} // Fechamento do if (typeof CaseManager !== 'undefined')
+}
 
-}); // Fechamento do document.addEventListener
+});

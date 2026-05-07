@@ -44,7 +44,7 @@ const Wizard = (function() {
             }
             
             if (!isValid) {
-                alert('Preencha os campos obrigatórios (*) para avançar.');
+                UI.showNotification('Preencha os campos obrigatórios (*) para avançar.', 'error');
             }
             return isValid;
         };

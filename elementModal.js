@@ -103,7 +103,7 @@ const ElementModal = (function() {
             });
 
             if (hasError) {
-                alert('Preencha os campos obrigatórios (*).');
+                UI.showNotification('Preencha os campos obrigatórios (*).', 'error');
                 return;
             }
 

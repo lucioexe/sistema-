@@ -58,6 +58,7 @@ const GraphEngine = (function() {
                 weapon: { color: { background: '#ef4444', border: '#dc2626' }, shape: 'triangleDown' }
             },
             physics: {
+                enabled: true,
                 forceAtlas2Based: {
                     gravitationalConstant: -70,
                     centralGravity: 0.01,
@@ -72,34 +73,37 @@ const GraphEngine = (function() {
             interaction: {
                 hover: true,
                 tooltipDelay: 200,
-                zoomView: true
+                zoomView: true,
+                selectConnectedEdges: false
             },
             manipulation: {
-                enabled: false, // Inicia desligado, será ativado pelo botão
+                enabled: false,
                 addNode: false,
-                addEdge: function(data, callback) {
+                addEdge: async function(data, callback) {
                     if (data.from == data.to) {
-                        alert('Não é possível conectar um nó a ele mesmo.');
+                        UI.showNotification('Não é possível conectar um nó a ele mesmo.', 'error');
                         callback(null);
                     } else {
-                        const label = prompt('Digite o tipo de relação:');
+                        const label = await CustomDialogs.prompt(
+                            'Nova Conexão', 
+                            'Digite o tipo de relação entre os elementos:',
+                            'Ex: Suspeito de, Local de crime...'
+                        );
+                        
                         if (label) {
                             data.label = label;
-                            callback(data); // Salva visualmente
+                            callback(data);
                             
-                            // Emite evento para persistência
                             if (onManualEdgeAddedCallback) {
                                 onManualEdgeAddedCallback(data);
                             }
                         } else {
                             callback(null);
                         }
-                        
-                        // Desativa o modo após tentar (opcional, para forçar clique duplo)
                         network.disableEditMode();
-                        // Reset button state if needed via UI logic
                     }
                 }
+
             }
         };
 
@@ -107,24 +111,56 @@ const GraphEngine = (function() {
 
         // Click Event listener
         network.on('click', function(params) {
+            // Se clicou em um nó
             if (params.nodes.length > 0) {
                 if (onNodeClickCallback) onNodeClickCallback(params.nodes[0]);
-            } else {
+            } 
+            // Se clicou em uma aresta (sem nó selecionado)
+            else if (params.edges.length > 0) {
+                const edgeId = params.edges[0];
+                const edgeData = edgesDataset.get(edgeId);
+                if (onEdgeClickCallback) onEdgeClickCallback(edgeData);
+                if (onNodeClickCallback) onNodeClickCallback(null); // Limpa inspetor
+            }
+            // Se clicou no vazio
+            else {
                 if (onNodeClickCallback) onNodeClickCallback(null);
+            }
+        });
+
+        // Drag End listener for coordinates
+        network.on('dragEnd', function(params) {
+            if (params.nodes.length > 0) {
+                const nodeId = params.nodes[0];
+                const position = network.getPositions([nodeId])[nodeId];
+                if (onNodePositionChangedCallback) {
+                    onNodePositionChangedCallback(nodeId, position.x, position.y);
+                }
             }
         });
     }
 
     let onManualEdgeAddedCallback = null;
     let onNodeClickCallback = null;
+    let onEdgeClickCallback = null;
+    let onNodePositionChangedCallback = null;
 
     function onNodeClick(callback) {
         onNodeClickCallback = callback;
     }
 
+    function onEdgeClick(callback) {
+        onEdgeClickCallback = callback;
+    }
+
     function onManualEdgeAdded(callback) {
         onManualEdgeAddedCallback = callback;
     }
+
+    function onNodePositionChanged(callback) {
+        onNodePositionChangedCallback = callback;
+    }
+
 
     function enableEdgeMode() {
         if (network) {
@@ -135,45 +171,53 @@ const GraphEngine = (function() {
     function renderGraphForCase(caso) {
         if (!network) return;
 
-        // Limpar dados atuais
         nodesDataset.clear();
         edgesDataset.clear();
 
-        // Extrair dados do caso
         const { local, crime, pessoa } = caso;
+        const hiddenEdges = caso.conexoesOcultas || [];
+
+        const isHidden = (from, to) => {
+            return hiddenEdges.some(e => (e.from === from && e.to === to) || (e.from === to && e.to === from));
+        };
+
+        // Desativar física se houver nós com coordenadas para evitar "espalhamento" indesejado
+        const hasCoords = (local.x !== undefined || crime.x !== undefined || pessoa.x !== undefined);
+        network.setOptions({ physics: { enabled: !hasCoords } });
 
         // Adicionar Nós
         nodesDataset.add([
             {
                 id: local.id,
                 label: local.endereco ? `${local.nome}\n${local.endereco}` : local.nome,
-                group: 'location'
+                group: 'location',
+                x: local.x, y: local.y
             },
             {
                 id: crime.id,
                 label: `Caso #${crime.id_crime}\n${crime.titulo}`,
-                group: 'case'
+                group: 'case',
+                x: crime.x, y: crime.y
             },
             {
                 id: pessoa.id,
                 label: pessoa.nome,
-                group: 'suspect'
+                group: 'suspect',
+                x: pessoa.x, y: pessoa.y
             }
         ]);
 
         // Adicionar Arestas da cena principal
-        edgesDataset.add([
-            {
-                from: pessoa.id,
-                to: crime.id,
-                label: pessoa.funcao || 'Envolvido em'
-            },
-            {
-                from: crime.id,
-                to: local.id,
-                label: 'Ocorreu em'
+        const standardEdges = [
+            { from: pessoa.id, to: crime.id, label: pessoa.funcao || 'Envolvido em' },
+            { from: crime.id, to: local.id, label: 'Ocorreu em' }
+        ];
+
+        standardEdges.forEach(edge => {
+            if (!isHidden(edge.from, edge.to)) {
+                edgesDataset.add(edge);
             }
-        ]);
+        });
 
         // Adicionar nós e arestas extras
         if (caso.elementosExtras && caso.elementosExtras.length > 0) {
@@ -198,28 +242,40 @@ const GraphEngine = (function() {
                 nodesDataset.add({
                     id: elemento.id,
                     label: elemento.nome,
-                    group: nodeGroup
+                    group: nodeGroup,
+                    x: elemento.x, y: elemento.y
                 });
 
-                edgesDataset.add({
-                    from: elemento.tipo === 'pessoa' || elemento.tipo === 'veiculo' || elemento.tipo === 'arma' ? elemento.id : crime.id,
-                    to: elemento.tipo === 'pessoa' || elemento.tipo === 'veiculo' || elemento.tipo === 'arma' ? crime.id : elemento.id,
-                    label: edgeLabel
-                });
+                const from = elemento.tipo === 'pessoa' || elemento.tipo === 'veiculo' || elemento.tipo === 'arma' ? elemento.id : crime.id;
+                const to = elemento.tipo === 'pessoa' || elemento.tipo === 'veiculo' || elemento.tipo === 'arma' ? crime.id : elemento.id;
+
+                if (!isHidden(from, to)) {
+                    edgesDataset.add({
+                        from: from,
+                        to: to,
+                        label: edgeLabel
+                    });
+                }
             });
         }
 
         // Desenhar Conexões Manuais
         if (caso.conexoesManuais && caso.conexoesManuais.length > 0) {
-            edgesDataset.add(caso.conexoesManuais);
+            caso.conexoesManuais.forEach(edge => {
+                if (!isHidden(edge.from, edge.to)) {
+                    edgesDataset.add(edge);
+                }
+            });
         }
 
-        // Redesenhar e focar
         setTimeout(() => {
             network.redraw();
-            network.fit({ animation: { duration: 1000, easingFunction: 'easeInOutQuad' } });
+            if (!hasCoords) {
+                network.fit({ animation: { duration: 1000, easingFunction: 'easeInOutQuad' } });
+            }
         }, 100);
     }
+
 
     function addExtraNode(nodeData, edgeData) {
         if (!network) return;
@@ -227,7 +283,6 @@ const GraphEngine = (function() {
         nodesDataset.add(nodeData);
         edgesDataset.add(edgeData);
 
-        // Focar no novo nó
         network.focus(nodeData.id, {
             scale: 1.2,
             animation: {
@@ -237,12 +292,27 @@ const GraphEngine = (function() {
         });
     }
 
+    function removeNode(nodeId) {
+        if (!network) return;
+        
+        // Vis.js handles connected edges automatically when a node is removed from DataSet
+        nodesDataset.remove(nodeId);
+        
+        // But we need to inform the UI that selection is gone
+        if (onNodeClickCallback) onNodeClickCallback(null);
+    }
+
     return {
         init,
         renderGraphForCase,
         addExtraNode,
+        removeNode,
         enableEdgeMode,
         onManualEdgeAdded,
-        onNodeClick
+        onNodeClick,
+        onEdgeClick,
+        onNodePositionChanged
     };
 })();
+
+

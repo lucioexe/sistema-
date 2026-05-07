@@ -85,6 +85,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     errorMsgCad.textContent = 'Essa matrícula já está cadastrada no sistema.';
                     errorMsgCad.style.display = 'block';
                 }
+                UI.showNotification('Essa matrícula já existe no sistema!', 'error');
                 return;
             }
 
@@ -98,7 +99,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             localStorage.setItem('usuariosCadastrados', JSON.stringify(usuariosCadastrados));
             
-            alert('Cadastro realizado com sucesso! Faça login para acessar o sistema.');
+            UI.showNotification('Cadastro realizado com sucesso! Faça login para acessar o sistema.', 'success');
             showLogin();
         });
     }
@@ -124,10 +125,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (errorMsgLogin) {
                     errorMsgLogin.textContent = 'Matrícula ou senha incorretos.';
                     errorMsgLogin.style.display = 'block';
-                } else {
-                    alert('Matrícula ou senha incorretos!');
                 }
+                UI.showNotification('Matrícula ou senha incorretos!', 'error');
             }
         });
     }
+
 });

@@ -2,6 +2,9 @@
 
 const CaseManager = (function() {
     let onCaseClickCallback = null;
+    let onDeleteCaseCallback = null;
+    let onRemoveElementCallback = null;
+    let onDataUpdatedCallback = null;
 
     function renderCards(meusCasos) {
         const container = document.getElementById('cases-grid-container');
@@ -25,6 +28,9 @@ const CaseManager = (function() {
             card.className = 'case-card';
             
             card.innerHTML = `
+                <div class="case-card-delete" title="Excluir Caso">
+                    <i class="ph ph-trash"></i>
+                </div>
                 <div class="case-card-header">
                     <span class="case-card-id">#${caso.crime.id_crime}</span>
                     <span class="case-card-date"><i class="ph ph-calendar"></i> ${caso.crime.data || 'Sem data'}</span>
@@ -36,6 +42,15 @@ const CaseManager = (function() {
                     <div><i class="ph ph-user"></i> Suspeito: ${caso.pessoa.nome}</div>
                 </div>
             `;
+
+            // Delete button listener
+            const deleteBtn = card.querySelector('.case-card-delete');
+            deleteBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (onDeleteCaseCallback) {
+                    onDeleteCaseCallback(caso);
+                }
+            });
 
             card.addEventListener('click', () => {
                 if (onCaseClickCallback) {
@@ -51,7 +66,13 @@ const CaseManager = (function() {
         onCaseClickCallback = callback;
     }
 
-    let onDataUpdatedCallback = null;
+    function onDeleteCase(callback) {
+        onDeleteCaseCallback = callback;
+    }
+
+    function onRemoveElement(callback) {
+        onRemoveElementCallback = callback;
+    }
 
     function onDataUpdated(callback) {
         onDataUpdatedCallback = callback;
@@ -69,7 +90,7 @@ const CaseManager = (function() {
         let html = '';
         
         Object.keys(elementData).forEach(key => {
-            if (key === 'id') return; // Do not allow editing ID directly here to prevent breaking references
+            if (key === 'id' || key === 'x' || key === 'y') return; // Do not allow editing ID or coords directly here
 
             const value = elementData[key] || '';
             
@@ -84,7 +105,34 @@ const CaseManager = (function() {
             `;
         });
 
+        // Add "Remover Elemento" button
+        html += `
+            <div class="inspector-actions">
+                <button id="btn-remover-elemento" class="btn-danger-outline">
+                    <i class="ph ph-trash"></i>
+                    Remover Elemento
+                </button>
+            </div>
+        `;
+
         inspectorContent.innerHTML = html;
+
+        // Listener for remove button
+        const removeBtn = document.getElementById('btn-remover-elemento');
+        if (removeBtn) {
+            removeBtn.addEventListener('click', async () => {
+                const confirmed = await CustomDialogs.confirm(
+                    'Deseja realmente remover este elemento?',
+                    'Remover Elemento'
+                );
+                if (confirmed) {
+                    if (onRemoveElementCallback) {
+                        onRemoveElementCallback(elementData.id);
+                    }
+                }
+            });
+        }
+
 
         // Add event listeners for edit buttons
         const editButtons = inspectorContent.querySelectorAll('.btn-edit');
@@ -130,6 +178,8 @@ const CaseManager = (function() {
     return {
         renderCards,
         onCaseClick,
+        onDeleteCase,
+        onRemoveElement,
         showInspector,
         onDataUpdated
     };

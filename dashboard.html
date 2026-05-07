@@ -54,7 +54,7 @@
             <div class="actions">
                 <div class="search-box">
                     <i class="ph ph-magnifying-glass"></i>
-                    <input type="text" placeholder="Buscar casos, suspeitos...">
+                    <input type="text" id="search-input" placeholder="Buscar casos, suspeitos...">
                 </div>
                 <button id="btn-novo-caso" class="btn-primary">
                     <i class="ph ph-plus"></i> <span id="btn-novo-text">Novo Caso</span>
@@ -261,10 +261,57 @@
         </div>
     </div>
 
+    <!-- Modal Prompt Customizado -->
+    <div id="modal-prompt-custom" class="modal-overlay">
+        <div class="modal-content" style="max-width: 400px;">
+            <div class="modal-header">
+                <h2 id="prompt-title">Título</h2>
+                <button id="prompt-close" class="btn-close"><i class="ph ph-x"></i></button>
+            </div>
+            <div class="modal-body">
+                <p id="prompt-message" style="margin-bottom: 16px; font-size: 14px; color: var(--text-muted);"></p>
+                <div class="form-group">
+                    <input type="text" id="prompt-input" class="form-control" placeholder="Digite aqui...">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="prompt-cancel" class="btn-secondary">Cancelar</button>
+                <button id="prompt-confirm" class="btn-primary">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Confirm Customizado -->
+    <div id="modal-confirm-custom" class="modal-overlay">
+        <div class="modal-content" style="max-width: 400px;">
+            <div class="modal-header">
+                <h2 id="confirm-title">Confirmar Ação</h2>
+                <button id="confirm-close" class="btn-close"><i class="ph ph-x"></i></button>
+            </div>
+            <div class="modal-body">
+                <p id="confirm-message" style="font-size: 15px; line-height: 1.5; color: var(--text-main);"></p>
+            </div>
+            <div class="modal-footer">
+                <button id="confirm-cancel" class="btn-secondary">Cancelar</button>
+                <button id="confirm-ok" class="btn-primary" style="background-color: var(--danger);">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
+    
+    <!-- Toast Container -->
+    <div id="toast-container"></div>
+
+    <script src="toast.js"></script>
+    <script src="ui.js"></script>
+    <script src="customDialogs.js"></script>
+
     <script src="graphEngine.js"></script>
+
     <script src="caseManager.js"></script>
     <script src="wizard.js"></script>
     <script src="elementModal.js"></script>
     <script src="dashboard.js"></script>
 </body>
 </html>
+
