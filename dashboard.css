@@ -109,6 +109,18 @@ body {
     border-radius: 4px;
 }
 
+.badge-distrito {
+    font-size: 11px;
+    color: #93c5fd; /* Azul claro para contraste em fundo escuro */
+    background-color: rgba(59, 130, 246, 0.1);
+    padding: 2px 8px;
+    border-radius: 12px;
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
 .btn-secondary {
     display: flex;
     align-items: center;

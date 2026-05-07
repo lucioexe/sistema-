@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const logoutBtn = document.getElementById('logout-btn');
     const displayMatricula = document.getElementById('display-matricula');
     const displayName = document.getElementById('display-name');
+    const displayDistrito = document.getElementById('display-distrito');
 
     const savedUserJson = localStorage.getItem('currentUser');
     let user = null;
@@ -14,6 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
         user = JSON.parse(savedUserJson);
         if (displayMatricula) displayMatricula.textContent = user.matricula;
         if (displayName) displayName.textContent = user.nome;
+        if (displayDistrito) displayDistrito.textContent = user.distrito || 'Sem Lotação';
         storageKey = `${user.matricula}_meusCasos`;
     } else {
         window.location.href = 'index.html';

@@ -116,8 +116,19 @@ const Wizard = (function() {
                 status: document.getElementById('pessoa-status').value
             };
 
+            // Capturar o distrito do policial logado
+            let distrito = 'Desconhecido';
+            const savedUserJson = localStorage.getItem('currentUser');
+            if (savedUserJson) {
+                const user = JSON.parse(savedUserJson);
+                if (user.distrito) {
+                    distrito = user.distrito;
+                }
+            }
+
             const payload = {
                 transactionType: 'CREATE_SCENE',
+                distritoOrigem: distrito,
                 local: localData,
                 crime: crimeData,
                 pessoa: pessoaData
