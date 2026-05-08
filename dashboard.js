@@ -122,7 +122,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (typeof CaseManager !== 'undefined') {
                 CaseManager.renderCards(meusCasos);
             }
-            UI.showNotification('Caso registrado com sucesso!', 'success');
+            UI.showNotification('Cadastro realizado com sucesso!', 'success');
         });
     }
 

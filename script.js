@@ -74,22 +74,29 @@ document.addEventListener('DOMContentLoaded', () => {
         cadastroForm.addEventListener('submit', (e) => {
             e.preventDefault();
             
-            const nome = cadNomeInput.value;
-            const matricula = cadMatriculaInput.value;
+            // 1. Captura
+            const nome = cadNomeInput.value.trim();
+            const matricula = cadMatriculaInput.value.trim();
             const senha = cadSenhaInput.value;
-            const distrito = cadDistritoInput.options[cadDistritoInput.selectedIndex].text;
+            const distrito = cadDistritoInput.options[cadDistritoInput.selectedIndex] ? cadDistritoInput.options[cadDistritoInput.selectedIndex].text : '';
 
-            // Verifica se a matrícula já existe
-            if (usuariosCadastrados[matricula]) {
-                if (errorMsgCad) {
-                    errorMsgCad.textContent = 'Essa matrícula já está cadastrada no sistema.';
-                    errorMsgCad.style.display = 'block';
-                }
-                UI.showNotification('Essa matrícula já existe no sistema!', 'error');
+            // 2. Validação
+            if (!nome || !matricula || !senha || !cadDistritoInput.value) {
+                alert('Erro: Verifique os campos ou matrícula já existente');
                 return;
             }
 
-            // Salva o novo usuário
+            // 3. Verificação de Duplicado
+            if (usuariosCadastrados[matricula]) {
+                if (errorMsgCad) {
+                    errorMsgCad.textContent = 'Erro: Verifique os campos ou matrícula já existente';
+                    errorMsgCad.style.display = 'block';
+                }
+                alert('Erro: Verifique os campos ou matrícula já existente');
+                return;
+            }
+
+            // 4. Gravação Correta
             usuariosCadastrados[matricula] = {
                 nome: nome,
                 matricula: matricula,
@@ -99,8 +106,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
             localStorage.setItem('usuariosCadastrados', JSON.stringify(usuariosCadastrados));
             
-            UI.showNotification('Cadastro realizado com sucesso! Faça login para acessar o sistema.', 'success');
+            // 5. Ação Pós-Sucesso
+            alert('Cadastro realizado com sucesso!');
             showLogin();
+            cadastroForm.reset();
         });
     }
 

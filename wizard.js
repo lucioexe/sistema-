@@ -20,12 +20,14 @@ const Wizard = (function() {
         Wizard.open = () => {
             modal.classList.add('active');
             goToStep(1);
+            if (btnFinalizar) btnFinalizar.disabled = false;
         };
 
         // Close Modal
         const closeModal = () => {
             modal.classList.remove('active');
             document.querySelectorAll('.form-control').forEach(input => input.value = '');
+            if (btnFinalizar) btnFinalizar.disabled = false;
         };
 
         btnClose.addEventListener('click', closeModal);
@@ -89,7 +91,13 @@ const Wizard = (function() {
 
         // Finalize
         btnFinalizar.addEventListener('click', () => {
-            if (!validateStep(3)) return;
+            if (!validateStep(3)) {
+                if (btnFinalizar) btnFinalizar.disabled = false;
+                return;
+            }
+
+            // Bloquear botão para evitar duplicidade
+            btnFinalizar.disabled = true;
 
             const generateId = () => Date.now() + Math.floor(Math.random() * 1000);
 

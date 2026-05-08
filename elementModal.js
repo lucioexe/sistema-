@@ -61,16 +61,21 @@ const ElementModal = (function() {
             selectTipo.value = 'pessoa';
             document.getElementById('add-elemento-id').value = '';
             renderDynamicFields('pessoa');
+            if (btnSalvar) btnSalvar.disabled = false;
         };
 
         const closeModal = () => {
             modal.classList.remove('active');
+            if (btnSalvar) btnSalvar.disabled = false;
         };
 
         btnClose.addEventListener('click', closeModal);
         btnCancelar.addEventListener('click', closeModal);
 
         btnSalvar.addEventListener('click', () => {
+            // Bloquear botão
+            btnSalvar.disabled = true;
+
             const tipo = selectTipo.value;
             let id = document.getElementById('add-elemento-id').value;
 
@@ -104,6 +109,7 @@ const ElementModal = (function() {
 
             if (hasError) {
                 UI.showNotification('Preencha os campos obrigatórios (*).', 'error');
+                btnSalvar.disabled = false;
                 return;
             }
 
